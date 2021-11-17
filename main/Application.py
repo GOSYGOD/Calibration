@@ -2,10 +2,10 @@
 '''
 Author: Jiaxi Zheng
 Date: 2021-11-01 13:44:13
-LastEditTime: 2021-11-10 16:26:12
+LastEditTime: 2021-11-17 16:13:09
 LastEditors: Jiaxi Zheng
 Description: 
-FilePath: \相关软件\Application.py
+FilePath: \标定上位机\Application.py
 '''
 
 import tkinter as tk
@@ -91,7 +91,7 @@ class Application(tk.Frame):
         self.targetFileFunc.grid(row=1, column=0, sticky='w')  
     
     '''
-    description: 功能区域布局，正北夹角/距离/雷达平移量
+    description: 功能区域布局，北向夹角/距离/雷达平移量
     param {*} self
     return {*}
     '''
@@ -101,7 +101,7 @@ class Application(tk.Frame):
         self.funcVar = tk.IntVar()
 
         # 功能
-        self.angleFunc = tk.Radiobutton(self.frameFunc, text='正北夹角', \
+        self.angleFunc = tk.Radiobutton(self.frameFunc, text='北向夹角', \
             font=('宋体', 15), padx=10, pady=8, variable=self.funcVar, value=1, command=self.TargetInputChange)
         self.disFunc = tk.Radiobutton(self.frameFunc, text='距离', \
             font=('宋体', 15), padx=10, pady=8, variable=self.funcVar, value=2, command=self.TargetInputChange)
@@ -234,7 +234,7 @@ class Application(tk.Frame):
         elif funcVar == 2:
             self.lonTargetLabel.configure(text=' 真值经度')
             self.latTargetLabel.configure(text='  真值纬度')
-            # self.lonLidarLabel.configure(text='主基站北向夹角')
+            self.lonLidarLabel.configure(text='主基站北向夹角')
             # self.latLidarLabel.configure(text='副基站北向夹角')
             self.xTargetLabel.configure(text='检测经度')
             self.yTargetLabel.configure(text='检测纬度')
@@ -264,7 +264,7 @@ class Application(tk.Frame):
 
         elif (typeVar == 1) & (funcVar == 2):
             self.latLidarEntry.config(state=tk.DISABLED)
-            self.lonLidarEntry.config(state=tk.DISABLED)
+            self.lonLidarEntry.config(state=tk.NORMAL)
             self.latTarEntry.config(state=tk.NORMAL)
             self.lonTarEntry.config(state=tk.NORMAL)
             self.xTarEntry.config(state=tk.NORMAL)
@@ -294,7 +294,7 @@ class Application(tk.Frame):
 
         elif (typeVar == 2) & (funcVar == 2):
             self.latLidarEntry.config(state=tk.DISABLED)
-            self.lonLidarEntry.config(state=tk.DISABLED)
+            self.lonLidarEntry.config(state=tk.NORMAL)
             self.latTarEntry.config(state=tk.NORMAL)
             self.lonTarEntry.config(state=tk.NORMAL)
             self.xTarEntry.config(state=tk.DISABLED)
@@ -310,12 +310,12 @@ class Application(tk.Frame):
     def DataRead(self):
         if self.targetInputVal == 1:
             #-------------------- 直接输入 --------------------#
-            # 正北夹角：    目标经纬度,x,y                  
-            # 距离：        目标真值经纬度和检测经纬度
-            # 雷达平移量：  主基站经纬度，副基站经纬度
+            # 北向夹角：    目标经纬度,x,y                  
+            # 距离：        目标真值经纬度和检测经纬度，北向夹角
+            # 雷达平移量：  主基站经纬度，副基站经纬度，北向夹角
             #-------------------------------------------------#
 
-            # 正北夹角
+            # 北向夹角
             if self.funcFlag == 1: 
                 try:
                     self.truthLonTarget = float(self.lonTarEntry.get())     # 目标真值经纬度
@@ -351,15 +351,30 @@ class Application(tk.Frame):
                     self.resultText.config(state=tk.DISABLED)               
                     return
 
+                try:
+                    self.angleNorth = float(self.lonLidarEntry.get())
+                except:
+                    self.resultText.insert(tk.INSERT, '北向夹角有误\n')
+                    self.readFlag = 0
+                    self.resultText.config(state=tk.DISABLED)               
+                    return
+
             # 雷达平移量
             elif self.funcFlag == 3:
                 try:
                     self.lonFirst = float(self.lonTarEntry.get())           # 主基站经纬度
                     self.latFirst = float(self.latTarEntry.get())
+                except:
+                    self.resultText.insert(tk.INSERT, '主基站经纬度有误\n')
+                    self.readFlag = 0
+                    self.resultText.config(state=tk.DISABLED)               
+                    return
+
+                try:
                     self.lonSecond = float(self.xTarEntry.get())            # 副基站经纬度
                     self.latSecond = float(self.yTarEntry.get())
                 except:
-                    self.resultText.insert(tk.INSERT, '目标输入数据有误\n')
+                    self.resultText.insert(tk.INSERT, '副基站经纬度有误\n')
                     self.readFlag = 0
                     self.resultText.config(state=tk.DISABLED)               
                     return
@@ -368,33 +383,13 @@ class Application(tk.Frame):
                     self.angleFirst = float(self.lonLidarEntry.get())       # 主基站北向夹角
                     self.angelSecond = float(self.latLidarEntry.get())      # 副基站北向夹角
                 except:
-                    self.resultText.insert(tk.INSERT, '雷达数据有误\n')
+                    self.resultText.insert(tk.INSERT, '北向夹角有误\n')
                     self.readFlag = 0
                     self.resultText.config(state=tk.DISABLED)     
                     return 
                     
         elif  self.targetInputVal == 2:
             #-------------------- 文件读取 --------------------#
-            # 读取目标真值经纬度
-            try:
-                self.truthLonTarget = float(self.lonTarEntry.get())      # 目标经纬度
-                self.truthLatTarget = float(self.latTarEntry.get())
-            except:
-                self.resultText.insert(tk.INSERT, '目标输入数据有误\n')
-                self.readFlag = 0
-                self.resultText.config(state=tk.DISABLED)     
-                return
-
-            # 读取雷达经纬度
-            try:
-                self.lonLidar = float(self.lonLidarEntry.get())         # 雷达经纬度
-                self.latLidar = float(self.latLidarEntry.get())
-            except:
-                self.resultText.insert(tk.INSERT, '雷达数据有误\n')
-                self.readFlag = 0
-                self.resultText.config(state=tk.DISABLED)     
-                return 
-
             # 读取id
             try:
                 idInput = self.idEntry.get()
@@ -431,6 +426,46 @@ class Application(tk.Frame):
                 self.readFlag = 0
                 return
 
+            if self.funcFlag == 1:
+                # 读取目标真值经纬度
+                try:
+                    self.truthLonTarget = float(self.lonTarEntry.get())      # 目标经纬度
+                    self.truthLatTarget = float(self.latTarEntry.get())
+                except:
+                    self.resultText.insert(tk.INSERT, '目标输入数据有误\n')
+                    self.readFlag = 0
+                    self.resultText.config(state=tk.DISABLED)     
+                    return
+
+                # 读取雷达经纬度
+                try:
+                    self.lonLidar = float(self.lonLidarEntry.get())         # 雷达经纬度
+                    self.latLidar = float(self.latLidarEntry.get())
+                except:
+                    self.resultText.insert(tk.INSERT, '雷达数据有误\n')
+                    self.readFlag = 0
+                    self.resultText.config(state=tk.DISABLED)     
+                    return 
+            else:
+                # 读取目标真值经纬度
+                try:
+                    self.truthLonTarget = float(self.lonTarEntry.get())      # 目标经纬度
+                    self.truthLatTarget = float(self.latTarEntry.get())
+                except:
+                    self.resultText.insert(tk.INSERT, '目标输入数据有误\n')
+                    self.readFlag = 0
+                    self.resultText.config(state=tk.DISABLED)     
+                    return
+
+                # 读取北向夹角
+                try:
+                    self.angleNorth = float(self.lonLidarEntry.get())         # 北向夹角
+                except:
+                    self.resultText.insert(tk.INSERT, '北向夹角有误\n')
+                    self.readFlag = 0
+                    self.resultText.config(state=tk.DISABLED)     
+                    return 
+                
     '''
     description: 计算
     param {*} self
@@ -459,7 +494,7 @@ class Application(tk.Frame):
         if not self.readFlag:
             return
                 
-        #-------------------- 计算正北夹角 --------------------#
+        #-------------------- 计算北向夹角 --------------------#
         if self.funcFlag == 1:
             
             self.ELidar, self.NLidar = GPS2UTM(self.latLidar, self.lonLidar)                    # 雷达经纬度转xy
@@ -467,23 +502,23 @@ class Application(tk.Frame):
 
             if self.targetInputVal == 1:
                 # 使用直接输入目标数据
-                # 经纬度转xy
-                pos = [self.xTarget, self.yTarget, self.ETarget, self.NTarget, self.ELidar, self.NLidar]
+                # 目标检测x、y,目标真值经纬度，雷达经纬度
+                pos = [self.xTarget, self.yTarget, self.ETarget, self.NTarget, self.ELidar, self.NLidar] 
                 self.angle = angleCal(pos)
-                self.resultText.insert(tk.INSERT, f'正北夹角:{self.angle:1.2f}\n')
+                self.resultText.insert(tk.INSERT, f'北向夹角:{self.angle:1.2f}\n')
             else:
                 # 使用文件数据
                 self.angleList = []
                 for id in self.idList:
-                    pos = np.zeros(6)     # 目标x,y,E,N;雷达E,N
-                    for data in self.targetDic[id]:
-                        pos = pos + np.array([float(data[0]), float(data[1]), 0, 0, 0, 0])
-                    pos = pos / len(self.targetDic[id])
-                    pos[2], pos[3], pos[4], pos[5] = self.ETarget, self.NTarget, self.ELidar, self.NLidar
-                    self.angleList.append(angleCal(pos))
-                    self.angle = np.mean(np.array(self.angleList))
-                    self.resultText.insert(tk.INSERT, f'Id{id}正北夹角:{self.angle:1.2f}\n')
-        
+                    pos = np.array([np.mean(self.targetDic[id][:, 0]), np.mean(self.targetDic[id][:, 1]), \
+                        self.ETarget, self.NTarget, self.ELidar, self.NLidar])
+                    self.angle = angleCal(pos)
+                    self.angleList.append(self.angle)
+                    self.resultText.insert(tk.INSERT, f'Id{id}北向夹角:{self.angle:1.2f}\n')
+
+                if len(self.idList) > 1:
+                    self.resultText.insert(tk.INSERT, f'平均北向夹角:{np.mean(self.angleList):1.2f}\n')
+
         #-------------------- 计算距离 --------------------#
         elif self.funcFlag == 2:
 
@@ -492,34 +527,41 @@ class Application(tk.Frame):
             if self.targetInputVal == 1:
                 # 直接输入
                 self.ETarget, self.NTarget = GPS2UTM(self.detLatTarget, self.detLonTarget)
-                self.xDis = self.ETarget - self.TruthETarget
-                self.yDis = self.NTarget - self.TruthNTarget
+                pos = np.array([self.ETarget, self.NTarget, self.TruthETarget, self.TruthNTarget, self.angleNorth])
+                self.dis = disCal(pos)
                 self.resultText.insert(tk.INSERT, '距离误差:\n')
-                self.resultText.insert(tk.INSERT, f'X方向:{self.xDis:1.2f}\n')
-                self.resultText.insert(tk.INSERT, f'Y方向:{self.yDis:1.2f}\n')
+                self.resultText.insert(tk.INSERT, f'X方向:{float(self.dis[0]):1.2f}\n')
+                self.resultText.insert(tk.INSERT, f'Y方向:{float(self.dis[1]):1.2f}\n')
             else:
                 # 文件读取
-                self.posList = []
                 for id in self.idList:
-                    pos = np.zeros(2)     # 目标E,N
-                    for data in self.targetDic[id]:
-                        ETarget, NTarget = GPS2UTM(float(data[3]), float(data[2]))
-                        pos = pos + np.array(ETarget, NTarget)
-                    pos = pos / len(self.targetDic[id])
-                    self.xDis = pos[0] - self.TruthETarget
-                    self.yDis = pos[1] - self.TruthNTarget
-                    self.posList.append([self.xDis, self.yDis])
+                    posList = np.array([0, 0])
+                    for i in range(self.targetDic[id].shape[0]):
+                        # self.ETarget, self.NTarget = GPS2UTM(self.targetDic[id][i,3], self.targetDic[id][i,2])
+                        # posList = posList + np.array([self.ETarget, self.NTarget])
+                        posList = posList + np.array(GPS2UTM(self.targetDic[id][i,3], self.targetDic[id][i,2]))
+                    posList = posList / self.targetDic[id].shape[0]
+                    pos = np.array([posList[0], posList[1], self.TruthETarget, self.TruthNTarget, self.angleNorth])
+                    self.dis = disCal(pos)
                     self.resultText.insert(tk.INSERT, f'Id{id}距离误差:\n')
-                    self.resultText.insert(tk.INSERT, f'X方向:{self.xDis:1.2f}\n')
-                    self.resultText.insert(tk.INSERT, f'Y方向:{self.yDis:1.2f}\n')
-                return   
+                    self.resultText.insert(tk.INSERT, f'X方向:{float(self.dis[0]):1.2f}\n')
+                    self.resultText.insert(tk.INSERT, f'Y方向:{float(self.dis[1]):1.2f}\n')
 
         #-------------------- 计算雷达 --------------------#
         elif self.funcFlag == 3:
-            pass
-            # self.ELidar, self.NLidar = GPS2UTM(self.latLidar, self.lonLidar)                    # 雷达经纬度转xy
-            # self.ETarget, self.NTarget = GPS2UTM(self.truthLatTarget, self.truthLonTarget)
-            # self.angleDis = self.
+            self.eFirst, self.nFirst = GPS2UTM(self.latFirst, self.lonFirst)
+            self.eSecond, self.nSecond = GPS2UTM(self.latSecond, self.lonSecond)
+
+            pos = np.array([[self.eFirst, self.nFirst, self.angleFirst], \
+                [self.eSecond, self.nSecond, self.angelSecond]])
+            
+            self.param = calibCal(pos)
+            self.resultText.insert(tk.INSERT, f'副雷达X方向平移:{float(self.param[0]):1.2f}\n')
+            self.resultText.insert(tk.INSERT, f'副雷达Y方向平移:{float(self.param[1]):1.2f}\n')
+            self.resultText.insert(tk.INSERT, f'副雷达Z轴旋转:{float(self.param[2]):1.2f}\n')
+        
+        
+        self.resultText.config(state=tk.DISABLED)     # 结果框不可被修改 
 
     '''
     description: 清空输入内容
