@@ -21,7 +21,7 @@ as the main's.
 
 ## Using
 
-Clone the whole repository, open the project and run the "Application.py" file.
+Cloning the whole repository, open the project and run the "Application.py" file in "main" folder.
 
 ## Environment
 
