@@ -21,7 +21,12 @@ as the main's.
 
 ## Using
 
+<<<<<<< Updated upstream
 Cloning the whole repository, open the project and run the "Application.py" file in "main" folder.
+=======
+Cloning the whole repository, open the project and run the "Application.py" file in 
+"main" folder.
+>>>>>>> Stashed changes
 
 ## Environment
 
