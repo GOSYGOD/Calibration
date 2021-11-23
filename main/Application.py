@@ -2,7 +2,7 @@
 '''
 Author: Jiaxi Zheng
 Date: 2021-11-01 13:44:13
-LastEditTime: 2021-11-17 17:26:53
+LastEditTime: 2021-11-23 13:13:07
 LastEditors: Jiaxi Zheng
 Description: 
 FilePath: \标定上位机\Application.py
@@ -25,7 +25,7 @@ class Application(tk.Frame):
     def __init__(self):
         # 初始化root，面积
         self.root = tk.Tk()
-        self.root.title('标定工具')
+        self.root.title('标定上位机')
         self.width = 800
         self.height = 400
         self.root.geometry(f'{self.width}x{self.height}')
@@ -37,7 +37,7 @@ class Application(tk.Frame):
 
         # 上中下三个区域（Top, Mid, Bot）
         self.panTop = tk.LabelFrame(self.frameAll, relief='sunken', pady=5)
-        self.panMid = tk.LabelFrame(self.frameAll, text='直接输入数据', relief='sunken', font=('宋体', 18), pady=5)
+        self.panMid = tk.LabelFrame(self.frameAll, text='数据输入', relief='sunken', font=('宋体', 18), pady=5)
         self.panBot = tk.LabelFrame(self.frameAll, relief='sunken', pady=5)
         self.panTop.pack(fill='x')
         self.panMid.pack(fill='x')
@@ -122,11 +122,11 @@ class Application(tk.Frame):
     def SetFrameFile(self):      
         #-------------------- 文件读取 --------------------#
         # ID
-        self.idLabel = tk.Label(self.frameFile, text='目标ID ', font=('宋体', 15), pady=5)
+        self.idLabel = tk.Label(self.frameFile, text='目标ID ', font=('宋体', 15), padx=10, pady=10)
         self.idEntry = tk.Entry(self.frameFile, font=('宋体', 15), width=15)
 
         # 文件路径
-        self.pathLabel = tk.Label(self.frameFile, text=' 文件路径 ', font=('宋体', 15), pady=5)
+        self.pathLabel = tk.Label(self.frameFile, text=' 文件路径 ', font=('宋体', 15), padx=10, pady=10)
         self.pathEntry = tk.Entry(self.frameFile, font=('宋体', 15), width=15)
 
         # 布局
@@ -151,11 +151,11 @@ class Application(tk.Frame):
         self.latTarEntry = tk.Entry(self.panMid, font=('宋体', 15), width=13)
         
         # 目标横坐标/检测经度
-        self.xTargetLabel = tk.Label(self.panMid, text='横坐标', font=('宋体', 15), pady=5)
+        self.xTargetLabel = tk.Label(self.panMid, text='感知横坐标', font=('宋体', 15), pady=5)
         self.xTarEntry = tk.Entry(self.panMid, font=('宋体', 15), width=13)
 
         # 目标纵坐标/检测纬度
-        self.yTargetLabel = tk.Label(self.panMid, text=' 纵坐标', font=('宋体', 15), pady=5)
+        self.yTargetLabel = tk.Label(self.panMid, text=' 感知纵坐标', font=('宋体', 15), pady=5)
         self.yTarEntry = tk.Entry(self.panMid, font=('宋体', 15), width=13)
         
         # 雷达经度/主基站北向夹角
@@ -167,18 +167,18 @@ class Application(tk.Frame):
         self.latLidarEntry = tk.Entry(self.panMid, font=('宋体', 15), width=15)
         
         # 布局
-        self.lonTargetLabel.grid(row=0, column=0)
-        self.lonTarEntry.grid(row=0, column=1)
-        self.latTargetLabel.grid(row=0, column=2)
-        self.latTarEntry.grid(row=0, column=3)
-        self.lonLidarLabel.grid(row=0,column=4)
-        self.lonLidarEntry.grid(row=0,column=5)
+        self.lonTargetLabel.grid(row=0, column=0, sticky=tk.constants.E)
+        self.lonTarEntry.grid(row=0, column=1, sticky=tk.constants.E)
+        self.latTargetLabel.grid(row=0, column=2, sticky=tk.constants.E)
+        self.latTarEntry.grid(row=0, column=3, sticky=tk.constants.E)
+        self.lonLidarLabel.grid(row=0,column=4, sticky=tk.constants.E)
+        self.lonLidarEntry.grid(row=0,column=5, sticky=tk.constants.E)
         self.xTargetLabel.grid(row=1, column=0, sticky=tk.constants.E)
-        self.xTarEntry.grid(row=1, column=1)
+        self.xTarEntry.grid(row=1, column=1, sticky=tk.constants.E)
         self.yTargetLabel.grid(row=1, column=2, sticky=tk.constants.E)
-        self.yTarEntry.grid(row=1, column=3)    
-        self.latLidarLabel.grid(row=1,column=4)
-        self.latLidarEntry.grid(row=1,column=5)
+        self.yTarEntry.grid(row=1, column=3, sticky=tk.constants.E)    
+        self.latLidarLabel.grid(row=1,column=4, sticky=tk.constants.E)
+        self.latLidarEntry.grid(row=1,column=5, sticky=tk.constants.E)
 
         
     '''
@@ -226,8 +226,8 @@ class Application(tk.Frame):
             self.latTargetLabel.configure(text='  真值纬度')
             self.lonLidarLabel.configure(text='  雷达经度')
             self.latLidarLabel.configure(text='  雷达纬度')
-            self.xTargetLabel.configure(text='横坐标')
-            self.yTargetLabel.configure(text=' 纵坐标')
+            self.xTargetLabel.configure(text='感知横坐标')
+            self.yTargetLabel.configure(text=' 感知纵坐标')
             self.targetFileFunc.configure(state=tk.NORMAL)
         
         # 距离
@@ -570,6 +570,15 @@ class Application(tk.Frame):
     def Clear(self):
         self.resultText.config(state=tk.NORMAL)     # 结果框可被修改 
 
+        self.latLidarEntry.config(state=tk.NORMAL)
+        self.lonLidarEntry.config(state=tk.NORMAL)
+        self.latTarEntry.config(state=tk.NORMAL)
+        self.lonTarEntry.config(state=tk.NORMAL)
+        self.xTarEntry.config(state=tk.NORMAL)
+        self.yTarEntry.config(state=tk.NORMAL)
+        self.idEntry.config(state=tk.NORMAL)
+        self.pathEntry.config(state=tk.NORMAL)
+        
         self.latLidarEntry.delete(0, 'end')
         self.lonLidarEntry.delete(0, 'end')
         self.latTarEntry.delete(0, 'end')
@@ -581,6 +590,9 @@ class Application(tk.Frame):
         self.resultText.delete(1.0, 'end')
 
         self.resultText.config(state=tk.DISABLED)     # 结果框不可被修改 
+
+        self.TargetInputChange()
+
 
 if __name__ == '__main__':
 

@@ -2,7 +2,7 @@
 '''
 Author: Jiaxi Zheng
 Date: 2021-11-02 16:17:39
-LastEditTime: 2021-11-17 17:26:46
+LastEditTime: 2021-11-23 16:10:44
 LastEditors: Jiaxi Zheng
 Description: 
 FilePath: \标定上位机\Calculate.py
@@ -23,9 +23,9 @@ def angleCal(mat):
     '''
     xEarth = mat[2] - mat[4]
     yEarth = mat[3] - mat[5]
-    rad = math.atan2(xEarth * mat[1] - mat[0] * yEarth, \
+    rad = math.atan2(yEarth * mat[0] - mat[1] * xEarth, \
         yEarth * mat[1] + xEarth * mat[0])
-    angle = (rad / math.pi * 180) % 360
+    angle = 360 - (rad / math.pi * 180) % 360
 
     return angle
 
