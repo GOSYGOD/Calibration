@@ -2,7 +2,7 @@
 '''
 Author: Jiaxi Zheng
 Date: 2021-11-02 16:17:39
-LastEditTime: 2021-11-23 16:10:44
+LastEditTime: 2021-11-24 17:41:54
 LastEditors: Jiaxi Zheng
 Description: 
 FilePath: \标定上位机\Calculate.py
@@ -37,8 +37,8 @@ return {dis} x,y方向距离误差
 def disCal(mat):
 
     rad = (360 - mat[4]) / 180 * math.pi
-
-    coor = np.array([[mat[2] - mat[0]], [mat[3] - mat[1]]])     # 以主基站为原点，副基站xy坐标
+    
+    coor = np.array([[mat[0] - mat[2]], [mat[1] - mat[3]]])                                 # 以真值为原点，检测结果相对真值位置
     rotMat = np.array([[math.cos(rad), math.sin(rad)], [-math.sin(rad), math.cos(rad)]])    # 坐标系旋转矩阵
     newCoor = np.matmul(rotMat, coor)
     xDis = newCoor[0] 
@@ -56,7 +56,7 @@ def calibCal(mat):
     angleDis = (mat[0,2] - mat[1,2])
     rad = (360 - mat[0,2]) / 180 * math.pi
 
-    coor = np.array([[mat[1,0] - mat[0,0]], [mat[1,1] - mat[0,1]]])     # 以主基站为原点，副基站xy坐标
+    coor = np.array([[mat[1,0] - mat[0,0]], [mat[1,1] - mat[0,1]]])                         # 以主基站为原点，副基站xy坐标
     rotMat = np.array([[math.cos(rad), math.sin(rad)], [-math.sin(rad), math.cos(rad)]])    # 坐标系旋转矩阵
     newCoor = np.matmul(rotMat, coor)
     xDis = newCoor[0] 
