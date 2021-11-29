@@ -2,7 +2,7 @@
 '''
 Author: Jiaxi Zheng
 Date: 2021-11-01 13:44:13
-LastEditTime: 2021-11-23 13:13:07
+LastEditTime: 2021-11-29 13:46:02
 LastEditors: Jiaxi Zheng
 Description: 
 FilePath: \标定上位机\Application.py
@@ -497,64 +497,68 @@ class Application(tk.Frame):
         #-------------------- 计算北向夹角 --------------------#
         if self.funcFlag == 1:
             
-            self.ELidar, self.NLidar = GPS2UTM(self.latLidar, self.lonLidar)                    # 雷达经纬度转xy
-            self.ETarget, self.NTarget = GPS2UTM(self.truthLatTarget, self.truthLonTarget)      # 目标经纬度转xy
+            # self.ELidar, self.NLidar = GPS2UTM(self.latLidar, self.lonLidar)                    # 雷达经纬度转xy
+            # self.ETarget, self.NTarget = GPS2UTM(self.truthLatTarget, self.truthLonTarget)      # 目标经纬度转xy
 
             if self.targetInputVal == 1:
                 # 使用直接输入目标数据
                 # 目标检测x、y,目标真值经纬度，雷达经纬度
-                pos = [self.xTarget, self.yTarget, self.ETarget, self.NTarget, self.ELidar, self.NLidar] 
-                self.angle = angleCal(pos)
+                pos = [self.xTarget, self.yTarget, self.truthLonTarget, self.truthLatTarget, self.lonLidar, self.latLidar] 
+                self.angle = NorthAngleCal(pos)
                 self.resultText.insert(tk.INSERT, f'北向夹角:{self.angle:1.2f}\n')
             else:
                 # 使用文件数据
-                self.angleList = []
-                for id in self.idList:
-                    pos = np.array([np.mean(self.targetDic[id][:, 0]), np.mean(self.targetDic[id][:, 1]), \
-                        self.ETarget, self.NTarget, self.ELidar, self.NLidar])
-                    self.angle = angleCal(pos)
-                    self.angleList.append(self.angle)
-                    self.resultText.insert(tk.INSERT, f'Id{id}北向夹角:{self.angle:1.2f}\n')
+                for id, values in self.targetDic.items():
+                    self.angleList = np.array([])
+                    for value in values:
+                        pos = np.array([value[0], value[1], self.truthLonTarget, self.truthLatTarget, \
+                            self.lonLidar, self.latLidar])
+                        self.angle = NorthAngleCal(pos)
+                        self.angleList = np.append(self.angleList, self.angle)
+                    
+                    self.resultText.insert(tk.INSERT, f'Id{id}北向夹角:{np.mean(self.angle):1.2f}\n')
 
-                if len(self.idList) > 1:
-                    self.resultText.insert(tk.INSERT, f'平均北向夹角:{np.mean(self.angleList):1.2f}\n')
+                # if len(self.idList) > 1:
+                #     self.resultText.insert(tk.INSERT, f'平均北向夹角:{np.mean(self.angleList):1.2f}\n')
 
         #-------------------- 计算距离 --------------------#
         elif self.funcFlag == 2:
 
-            self.TruthETarget, self.TruthNTarget = GPS2UTM(self.truthLatTarget, self.truthLonTarget)
+            # self.TruthETarget, self.TruthNTarget = GPS2UTM(self.truthLatTarget, self.truthLonTarget)
 
             if self.targetInputVal == 1:
                 # 直接输入
-                self.ETarget, self.NTarget = GPS2UTM(self.detLatTarget, self.detLonTarget)
-                pos = np.array([self.ETarget, self.NTarget, self.TruthETarget, self.TruthNTarget, self.angleNorth])
-                self.dis = disCal(pos)
+                # self.ETarget, self.NTarget = GPS2UTM(self.detLatTarget, self.detLonTarget)
+                # pos = np.array([self.ETarget, self.NTarget, self.TruthETarget, self.TruthNTarget, self.angleNorth])
+                pos = np.array([self.detLonTarget, self.detLatTarget, self.truthLonTarget, self.truthLatTarget, self.angleNorth])
+                self.dis = DisCal(pos)
                 self.resultText.insert(tk.INSERT, '距离误差:\n')
                 self.resultText.insert(tk.INSERT, f'X方向:{float(self.dis[0]):1.2f}\n')
                 self.resultText.insert(tk.INSERT, f'Y方向:{float(self.dis[1]):1.2f}\n')
             else:
                 # 文件读取
-                for id in self.idList:
-                    posList = np.array([0, 0])
+                for id, values in self.targetDic.items():
+                    self.disList = np.array([])
+                    for value in values:
                     # 计算检测平均x,y
-                    for i in range(self.targetDic[id].shape[0]):
-                        posList = posList + np.array(GPS2UTM(self.targetDic[id][i,3], self.targetDic[id][i,2]))
-                    posList = posList / self.targetDic[id].shape[0]
-                    pos = np.array([posList[0], posList[1], self.TruthETarget, self.TruthNTarget, self.angleNorth])
-                    self.dis = disCal(pos)
+                    # for i in range(self.targetDic[id].shape[0]):
+                    #     posList = posList + np.array(GPS2UTM(self.targetDic[id][i,3], self.targetDic[id][i,2]))
+                        pos = np.array([value[2], value[3], self.truthLonTarget, self.truthLatTarget, self.angleNorth])
+                        self.dis = DisCal(pos)
+                        self.disList = np.append(self.disList, self.dis)
                     self.resultText.insert(tk.INSERT, f'Id{id}距离误差:\n')
-                    self.resultText.insert(tk.INSERT, f'X方向:{float(self.dis[0]):1.2f}\n')
-                    self.resultText.insert(tk.INSERT, f'Y方向:{float(self.dis[1]):1.2f}\n')
+                    self.resultText.insert(tk.INSERT, f'X方向:{np.mean(self.disList[:][0]):1.2f}\n')
+                    self.resultText.insert(tk.INSERT, f'Y方向:{np.mean(self.disList[:][1]):1.2f}\n')
 
-        #-------------------- 计算雷达 --------------------#
+        #-------------------- 计算雷达平移量 --------------------#
         elif self.funcFlag == 3:
-            self.eFirst, self.nFirst = GPS2UTM(self.latFirst, self.lonFirst)
-            self.eSecond, self.nSecond = GPS2UTM(self.latSecond, self.lonSecond)
+            # self.eFirst, self.nFirst = GPS2UTM(self.latFirst, self.lonFirst)
+            # self.eSecond, self.nSecond = GPS2UTM(self.latSecond, self.lonSecond)
 
-            pos = np.array([[self.eFirst, self.nFirst, self.angleFirst], \
-                [self.eSecond, self.nSecond, self.angelSecond]])
+            pos = np.array([[self.lonFirst, self.latFirst, self.angleFirst], \
+                [self.lonSecond, self.latSecond, self.angelSecond]])
             
-            self.param = calibCal(pos)
+            self.param = CalibCal(pos)
             self.resultText.insert(tk.INSERT, f'副雷达X方向平移:{float(self.param[0]):1.2f}\n')
             self.resultText.insert(tk.INSERT, f'副雷达Y方向平移:{float(self.param[1]):1.2f}\n')
             self.resultText.insert(tk.INSERT, f'副雷达Z轴旋转:{float(self.param[2]):1.2f}\n')
